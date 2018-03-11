@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 import json
-
 import re
-
 import apiparser
 import config
 import telebot
@@ -19,8 +17,7 @@ def handle_start_help(message):
     resultstart = "Здравствуйте. \n" \
              "Я бот для получения информации о юридических лицах " \
                   "и индивидуальных предпринимателях из сервиса \"Индикатор\"\n" \
-             "Пока только о юридических лицах =)\n" \
-             "Для поиска введите 10 значный ИНН \n" \
+             "Для поиска введите 10 или 12 значный ИНН \n" \
                   "Удачи "
     bot.send_message(message.chat.id, resultstart)
 
