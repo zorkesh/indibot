@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import json
+
 import re
+
 import apiparser
 import config
 import telebot
@@ -17,7 +19,7 @@ def handle_start_help(message):
     resultstart = "Здравствуйте. \n" \
              "Я бот для получения информации о юридических лицах " \
                   "и индивидуальных предпринимателях из сервиса \"Индикатор\"\n" \
-             "Для поиска введите 10 или 12 значный ИНН \n" \
+                  "Поиск производится по ИНН, Наименованию, ФИО Руководителя, Учредителям, Адресу регистрации. \n" \
                   "Удачи "
     bot.send_message(message.chat.id, resultstart)
 
@@ -25,7 +27,7 @@ def handle_start_help(message):
 @bot.message_handler(regexp=r'\d{12}')
 def handle_ip_message(message):
     try:
-        inn = message.text
+        inn = message.text.replace('/', '')
         rate = apiparser.getRating(inn)
         if not 'errorDescriptionRu' in rate:
             respmessage = ''
@@ -45,7 +47,7 @@ def handle_ip_message(message):
 @bot.message_handler(regexp=r'\d{10}')
 def handle_message(message):
     try:
-        inn = message.text
+        inn = message.text.replace('/', '')
         rate = apiparser.getRating(inn)
         if not 'errorDescriptionRu' in rate:
             respmessage = ''
@@ -72,38 +74,37 @@ def handle_message(message):
         else:
             bot.send_message(message.chat.id, rate["errorDescriptionRu"])
     except Exception as e:
-        bot.send_message(message.chat.id, 'Что-то пошло не так. Попробуйте позже\n')
+        bot.send_message(message.chat.id, 'Что-то пошло не так. Попробуйте позже\n' + str(e))
 
 
 @bot.message_handler(func=lambda message: True, content_types=['text'])
-def echo_msg(message):
-    bot.send_message(message.chat.id, "Я пока не понимаю никаких сообщений кроме ИНН :(")
+def search_msg(message):
+    # bot.send_message(message.chat.id, "Я пока не понимаю никаких сообщений кроме ИНН :(")
+    # try:
+    resp = apiparser.search(message.text)
+    respmessage = apiparser.parseSearch(resp)
+    bot.send_message(message.chat.id, respmessage, parse_mode='markdown')
+    # except Exception as e:
+    #     bot.send_message(message.chat.id, 'Что-то пошло не так. Попробуйте позже\n' + str(e))
 
 
-@bot.inline_handler(func=lambda query: len(query.query) > 0)
+@bot.inline_handler(func=lambda query: len(query.query) > 3)
 def query_text(query):
-    pattern = re.compile(r'\d{10}', re.MULTILINE)
-    try:
-        matches = re.match(pattern, query.query)
-        if not matches:
-            return
-    # Вылавливаем ошибку, если вдруг юзер ввёл чушь
-    # или задумался после ввода первого числа
-    except AttributeError:
-        return
-    inn = matches.string
-    org = apiparser.getRating(inn)
-    if not 'errorDescriptionRu' in org:
-        r_inf = types.InlineQueryResultArticle(id=1,
-                                               title=inn,
-                                               description=org['shortName'] if 'shortName' in org else org['fullName'],
-                                               input_message_content=types.InputTextMessageContent(message_text=inn,
-                                                                                                   parse_mode='markdown'))
-        bot.answer_inline_query(query.id, [r_inf])
+    data = apiparser.search(query.query)
+    if data:
+        r_inf = []
+        for i in range(5) if len(data) > 5 else range(len(data)):
+            org = data[i]
+            r_inf.append(types.InlineQueryResultArticle(id=i,
+                                                        title=org['inn'],
+                                                        description=org['name'] if 'name' in org else org['fullName'],
+                                                        input_message_content=types.InputTextMessageContent(
+                                                            message_text=org['inn'], parse_mode='markdown')))
+        bot.answer_inline_query(query.id, r_inf)
     else:
         r_inf = types.InlineQueryResultArticle(id=1,
-                                               title=inn,
-                                               description="Контрагент не найден",
+                                               title='',
+                                               description="Ничего не найдено",
                                                input_message_content=types.InputTextMessageContent(message_text=inn,
                                                                                                    parse_mode='markdown'))
         bot.answer_inline_query(query.id, [r_inf])

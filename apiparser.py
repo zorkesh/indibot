@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import json
 from decimal import Decimal
 
@@ -17,6 +16,44 @@ numbers = [u'\U00000030'+u'\U000020E3', u'\U00000031'+u'\U000020E3', u'\U0000003
            u'\U00000033'+u'\U000020E3', u'\U00000034'+u'\U000020E3', u'\U00000035'+u'\U000020E3',
            u'\U00000036'+u'\U000020E3', u'\U00000037'+u'\U000020E3', u'\U00000038'+u'\U000020E3',
            u'\U00000039'+u'\U000020E3']
+
+
+def search(query):
+    payload = {'query': query, 'installationId': 9999, 'clientGuid': 'E2379CB15C9F4B54A77DBBF1CC6EC91C'}
+    headers = {"Content-Type": "application/json"}
+    result = requests.get(config.indicatorUrl + '/search', params=payload, headers=headers, verify=config.verification)
+    data = result.json()['data']
+    return data
+
+
+def parseSearch(data):
+    if data:
+        message = '*Результаты поиска (Топ-5)*\n'
+        for i in range(5) if len(data) > 5 else range(len(data)):
+            orgRecord = data[i]
+            if 'kpp' in orgRecord:
+                kpp = orgRecord['kpp']
+            else:
+                kpp = ''
+            if 'name' in orgRecord:
+                shortName = orgRecord['name']
+            else:
+                shortName = orgRecord['fullName']
+            status = orgRecord['status'].capitalize()
+            inn = orgRecord['inn']
+            message += shortName + "\n"
+            message += "*Статус:* " + status + "\n"
+            message += "*ИНН:* /" + inn + "\n"
+            if not kpp == '':
+                message += "*КПП:* " + kpp + "\n"
+            if 'leader' in orgRecord:
+                leader = orgRecord['leader']
+                leaderPosition = '*' + orgRecord['leaderPosition'].capitalize() + '*'
+                message += leaderPosition + ':' + leader + "\n"
+            message += '*Адрес:*' + orgRecord['address'] + '\n\n'
+    else:
+        message = "Ничего не найдено, уточните параметры поиска"
+    return message
 
 
 def getMainInfo(inn):
@@ -163,7 +200,7 @@ def parseLeaders(orgRecord):
     message = ''
     if not 'errorDescriptionRu' in orgRecord:
         for auth_data in orgRecord:
-            if auth_data['patronymic']:
+            if 'patronymic' in auth_data:
                 patr = auth_data['patronymic']
             else:
                 patr = ''
@@ -184,7 +221,7 @@ def parseFounders(orgRecord):
             if not founder_data['content']['stakeOwner']['type'] == 'PERSON':
                 name = founder_data['content']['stakeOwner']['fullName']
             else:
-                if founder_data['content']['stakeOwner']['patronymic']:
+                if 'patronymic' in founder_data['content']['stakeOwner']:
                     patr = founder_data['content']['stakeOwner']['patronymic']
                 else:
                     patr = ''
