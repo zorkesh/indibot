@@ -1,1 +1,1 @@
-telebot==3.6.0
+pytelegrambotapi>=1.4.2
