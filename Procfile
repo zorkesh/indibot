@@ -1,1 +1,1 @@
-web: python3 indicator.py
+bot: python indicator.py
