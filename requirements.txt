@@ -1,1 +1,1 @@
-telebot=3.6.0
+telebot==3.6.0
