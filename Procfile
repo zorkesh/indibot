@@ -1,1 +1,1 @@
-web: python indicator.py
+web: python3 indicator.py
