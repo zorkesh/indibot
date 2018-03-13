@@ -1,1 +1,1 @@
-init: python3 indicator.py
+web: python indicator.py
