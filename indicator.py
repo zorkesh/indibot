@@ -68,7 +68,7 @@ def handle_message(message):
             if okpo == '':
                 respmessage += "*Бухгалтерская отчетность не опубликована*"
             else:
-                finInfo = apiparser.getFinanceSummary(okpo)
+                finInfo = apiparser.getFinanceSummary(ogrn)
                 respmessage += apiparser.parseFinSummary(finInfo) + "\n"
             bot.send_message(message.chat.id, respmessage, parse_mode='markdown')
         else:
