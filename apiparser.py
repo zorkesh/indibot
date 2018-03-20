@@ -92,7 +92,7 @@ def getFounders(ogrn):
 
 
 def getFinanceSummary(ogrn):
-    result = requests.get(config.indicatorUrl + '/api/v1/entities/' + ogrn + 'legal_bookkeeping/summary', verify=config.verification)
+    result = requests.get(config.indicatorUrl + '/api/v1/entities/' + ogrn + '/legal_bookkeeping/summary', verify=config.verification)
     data = json.loads(result.text)
     if not data['content']['data']:
         data = json.loads(
