@@ -16,6 +16,7 @@ numbers = [u'\U00000030'+u'\U000020E3', u'\U00000031'+u'\U000020E3', u'\U0000003
            u'\U00000033'+u'\U000020E3', u'\U00000034'+u'\U000020E3', u'\U00000035'+u'\U000020E3',
            u'\U00000036'+u'\U000020E3', u'\U00000037'+u'\U000020E3', u'\U00000038'+u'\U000020E3',
            u'\U00000039'+u'\U000020E3']
+rouble = u'\U000020BD'
 
 
 def search(query):
@@ -191,7 +192,7 @@ def parseOrgrecord(orgRecord):
     message += "*Дата создания: *" + regdate + "\n"
     message += "*Адрес:* " + address + "\n"
     if not capital == '':
-        message += "*Уставный капитал: *" + capital + " руб." + "\n"
+        message += "*Уставный капитал: *" + capital + ' ' + rouble + "\n"
     message += "*Основной вид деятельности: *" + mainActivity + "\n"
     return message
 
@@ -233,7 +234,7 @@ def parseFounders(orgRecord):
                 inn = ''
             stake = founder_data['content']['stakeSize']
             try:
-                stake_size = tools.moneyfmt(Decimal(stake)) + ' руб.'
+                stake_size = tools.moneyfmt(Decimal(stake)) + ' ' + rouble
             except Exception:
                 stake_size = str(stake)
             message += u'\U000025CF' + str(name) + ' - ' + stake_size + '\n'
@@ -250,12 +251,12 @@ def parseFinSummary(orgRecord):
         year = sorted(list(orgRecord['content']['data'].keys()))[-1]
         message += year + " год.*" + "\n"
         lastdata = orgRecord['content']['data'][year]
-        message += "*Баланс: *" + tools.moneyfmt(Decimal(lastdata['actives'])) + " руб.\n"
-        message += "*Выручка: *" + tools.moneyfmt(Decimal(lastdata['earnings'])) + " руб.\n"
+        message += "*Баланс: *" + tools.moneyfmt(Decimal(lastdata['actives'])) + ' ' + rouble + '\n'
+        message += "*Выручка: *" + tools.moneyfmt(Decimal(lastdata['earnings'])) + ' ' + rouble + '\n'
         if Decimal(lastdata['profit']) >= 0:
-            message += "*Прибыль: *" + tools.moneyfmt(Decimal(lastdata['profit'])) + " руб.\n"
+            message += "*Прибыль: *" + tools.moneyfmt(Decimal(lastdata['profit'])) + ' ' + rouble + '\n'
         else:
-            message += "*Убыток: *" + tools.moneyfmt(Decimal(lastdata['profit']), neg='') + " руб.\n"
+            message += "*Убыток: *" + tools.moneyfmt(Decimal(lastdata['profit']), neg='') + ' ' + rouble + '\n'
     else:
         message = "*" + orgRecord['errorDescriptionRu'] + "*"
     return message
