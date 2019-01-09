@@ -11,13 +11,6 @@ get* - получение JSON объекта из API
 parse* - разбор JSON объекта и возврат текста для сообщения бота 
 """
 
-ratings = {'green': u'\U0001F4D7', 'red': u'\U0001F4D5', 'blue': u'\U0001F4D8', 'yellow': u'\U0001F4D9'}
-numbers = [u'\U00000030'+u'\U000020E3', u'\U00000031'+u'\U000020E3', u'\U00000032'+u'\U000020E3',
-           u'\U00000033'+u'\U000020E3', u'\U00000034'+u'\U000020E3', u'\U00000035'+u'\U000020E3',
-           u'\U00000036'+u'\U000020E3', u'\U00000037'+u'\U000020E3', u'\U00000038'+u'\U000020E3',
-           u'\U00000039'+u'\U000020E3']
-rouble = u'\U000020BD'
-
 
 def search(query):
     payload = {'query': query, 'installationId': 9999, 'clientGuid': 'E2379CB15C9F4B54A77DBBF1CC6EC91C'}
