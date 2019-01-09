@@ -1,14 +1,9 @@
 # -*- coding: utf-8 -*-
-import json
-
-import re
 
 import apiparser
 import config
 import telebot
 from telebot import types
-import os
-import requests
 
 
 bot = telebot.TeleBot(config.token)

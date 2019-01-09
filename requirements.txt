@@ -1,1 +1,2 @@
+requests
 pytelegrambotapi>=1.4.2

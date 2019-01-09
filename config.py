@@ -1,9 +1,10 @@
 # URL and access settings
-
+scheme_type = 'access-key'
 api_key = '7393d085-3c01-4c7e-b78f-c75cb67bb62c'
 indicatorUrl = 'https://indicator.bifit.com/api/v2/'
 verification = True
-
+headers = {"Content-Type": "application/json", "Authorization": scheme_type + ' ' + api_key}
+token = '518480616:AAHOABeSXWQu4n-Z8VoCKhv2-fKS6YRAIXc'
 # Messaging parameters
 
 ratings = {'green': u'\U0001F4D7', 'red': u'\U0001F4D5', 'blue': u'\U0001F4D8', 'yellow': u'\U0001F4D9'}

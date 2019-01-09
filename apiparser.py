@@ -5,6 +5,8 @@ import requests
 
 import config
 import tools
+import indicatorReq as irq
+
 """
 Модуль для разбора данных ответа API Индикатора.
 get* - получение JSON объекта из API
@@ -13,9 +15,10 @@ parse* - разбор JSON объекта и возврат текста для 
 
 
 def search(query):
-    payload = {'query': query, 'installationId': 9999, 'clientGuid': 'E2379CB15C9F4B54A77DBBF1CC6EC91C'}
-    headers = {"Content-Type": "application/json"}
-    result = requests.get(config.indicatorUrl + '/search', params=payload, headers=headers, verify=config.verification)
+    payload = {'query': query}
+    headers = config.headers
+    result = requests.get(irq.search, params=payload, headers=headers,
+                          verify=config.verification)
     data = result.json()['data']
     return data
 
@@ -24,7 +27,7 @@ def parseSearch(data):
     if data:
         message = '*Результаты поиска (Топ-5)*\n'
         for i in range(5) if len(data) > 5 else range(len(data)):
-            orgRecord = data[i]
+            orgRecord = data['content'][i]['content']
             if 'kpp' in orgRecord:
                 kpp = orgRecord['kpp']
             else:
@@ -42,9 +45,10 @@ def parseSearch(data):
                 message += "*КПП:* " + kpp + "\n"
             if 'leader' in orgRecord:
                 leader = orgRecord['leader']
-                leaderPosition = '*' + orgRecord['leaderPosition'].capitalize() + '*'
-                message += leaderPosition + ':' + leader + "\n"
-            message += '*Адрес:*' + orgRecord['address'] + '\n\n'
+                leaderPosition = '*' + leader['leaderPosition'].capitalize() + '*'
+                leader_name = leader['name']
+                message += leaderPosition + ':' + leader_name + "\n"
+            message += '*Адрес:*' + orgRecord['addressStr'] + '\n\n'
     else:
         message = "Ничего не найдено, уточните параметры поиска"
     return message
