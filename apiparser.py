@@ -110,6 +110,8 @@ def parsemaincodes(orgRecord):
 
 
 def parseRating(orgRecord):
+    ratings = config.ratings
+    numbers = config.numbers
     message = 'Краткая информация о '
     kpp = ''
     if 'kpp' in orgRecord:
@@ -136,6 +138,7 @@ def parseRating(orgRecord):
 
 
 def parseOrgrecord(orgRecord):
+    rouble = config.rouble
     capital = ''
     mainActivity = ''
     message = ''
@@ -209,6 +212,7 @@ def parseLeaders(orgRecord):
 
 
 def parseFounders(orgRecord):
+    rouble = config.rouble
     message = '*Учредители: *\n'
     if not 'errorDescriptionRu' in orgRecord:
         for founder_data in orgRecord['content']:
@@ -239,6 +243,7 @@ def parseFounders(orgRecord):
 
 
 def parseFinSummary(orgRecord):
+    rouble = config.rouble
     message = '*Бухгалтерская отчетность за '
     if not 'errorDescriptionRu' in orgRecord:
         year = sorted(list(orgRecord['content']['data'].keys()))[-1]
