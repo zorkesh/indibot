@@ -19,7 +19,7 @@ def search(query):
     headers = config.headers
     result = requests.get(irq.search, params=payload, headers=headers,
                           verify=config.verification)
-    data = result.json()['data']
+    data = result.json()
     return data
 
 
