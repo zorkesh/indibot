@@ -45,7 +45,7 @@ def parseSearch(data):
                 message += "*КПП:* " + kpp + "\n"
             if 'leader' in orgRecord:
                 leader = orgRecord['leader']
-                leaderPosition = '*' + leader['leaderPosition'].capitalize() + '*'
+                leaderPosition = '*' + leader['position'].capitalize() + '*'
                 leader_name = leader['name']
                 message += leaderPosition + ':' + leader_name + "\n"
             message += '*Адрес:*' + orgRecord['addressStr'] + '\n\n'
