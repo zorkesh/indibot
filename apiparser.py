@@ -36,7 +36,7 @@ def parseSearch(data):
                 shortName = orgRecord['name']
             else:
                 shortName = orgRecord['fullName']
-            status = orgRecord['status'].capitalize()
+            status = orgRecord['statusStr'].capitalize()
             inn = orgRecord['inn']
             message += shortName + "\n"
             message += "*Статус:* " + status + "\n"
