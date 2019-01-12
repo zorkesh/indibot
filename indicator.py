@@ -45,34 +45,34 @@ def handle_ip_message(message):
 
 @bot.message_handler(regexp=r'\d{10}')
 def handle_message(message):
-    try:
-        inn = message.text.replace('/', '')
-        rate = apiparser.get_rating(inn)
-        if not 'message' in rate:
-            respmessage = ''
-            # ratemessage = apiparser.parse_rating(rate)
-            resp_message += 'Краткая информация об организации.' + "\n"
-            orginforecord = apiparser.get_main_info(inn)
-            # Ищем организацию
-            mainInfo = apiparser.parse_org_card(orginforecord)
-            respmessage += mainInfo + "\n"
-            # Ищем директоров
-            #leadersInfo = apiparser.getLeaders(inn)
-            #respmessage += apiparser.parseLeaders(leadersInfo) + "\n"
-            # TODO Добавить учредителей
-            #foundersInfo = apiparser.getFounders(ogrn)
-            #respmessage += apiparser.parseFounders(foundersInfo) + "\n"
-            # Ищем бух.отчетнсть
-            #if okpo == '':
-            #    respmessage += "*Бухгалтерская отчетность не опубликована*"
-            #else:
-            #    finInfo = apiparser.getFinanceSummary(ogrn)
-            #    respmessage += apiparser.parseFinSummary(finInfo) + "\n"
-            bot.send_message(message.chat.id, respmessage, parse_mode='markdown')
-        else:
-            bot.send_message(message.chat.id, rate['message'])
-    except Exception as e:
-        bot.send_message(message.chat.id, 'Что-то пошло не так. Попробуйте позже\n' + str(e))
+    #try:
+    inn = message.text.replace('/', '')
+    rate = apiparser.get_rating(inn)
+    if not 'message' in rate:
+        respmessage = ''
+        # ratemessage = apiparser.parse_rating(rate)
+        resp_message += 'Краткая информация об организации.' + "\n"
+        orginforecord = apiparser.get_main_info(inn)
+        # Ищем организацию
+        mainInfo = apiparser.parse_org_card(orginforecord)
+        respmessage += mainInfo + "\n"
+        # Ищем директоров
+        #leadersInfo = apiparser.getLeaders(inn)
+        #respmessage += apiparser.parseLeaders(leadersInfo) + "\n"
+        # TODO Добавить учредителей
+        #foundersInfo = apiparser.getFounders(ogrn)
+        #respmessage += apiparser.parseFounders(foundersInfo) + "\n"
+        # Ищем бух.отчетнсть
+        #if okpo == '':
+        #    respmessage += "*Бухгалтерская отчетность не опубликована*"
+        #else:
+        #    finInfo = apiparser.getFinanceSummary(ogrn)
+        #    respmessage += apiparser.parseFinSummary(finInfo) + "\n"
+        bot.send_message(message.chat.id, respmessage, parse_mode='markdown')
+    else:
+        bot.send_message(message.chat.id, rate['message'])
+    #except Exception as e:
+     #   bot.send_message(message.chat.id, 'Что-то пошло не так. Попробуйте позже\n' + str(e))
 
 
 @bot.message_handler(func=lambda message: True, content_types=['text'])
