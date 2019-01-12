@@ -103,7 +103,7 @@ def get_rating(inn):
     if result.status_code == 200:
         return json.loads(result.text)['content']
     else:
-        return json.load(result.text)
+        return json.loads(result.text)
 
 
 def parse_main_codes(org_card):
