@@ -5,7 +5,7 @@ import requests
 
 import config
 import tools
-import indicatorReq as irq
+import indireq as irq
 
 """
 Модуль для разбора данных ответа API Индикатора.
@@ -23,52 +23,50 @@ def search(query):
     return data
 
 
-def parseSearch(data):
+def parse_search(data):
     if data:
         message = '*Результаты поиска (Топ-5)*\n'
         for i in range(5) if len(data) > 5 else range(len(data)):
-            orgRecord = data['content'][i]['content']
-            if 'kpp' in orgRecord:
-                kpp = orgRecord['kpp']
+            org_record = data['content'][i]['content']
+            if 'kpp' in org_record:
+                kpp = org_record['kpp']
             else:
                 kpp = ''
-            if 'name' in orgRecord:
-                shortName = orgRecord['name']
+            if 'name' in org_record:
+                short_name = org_record['name']
             else:
-                shortName = orgRecord['fullName']
-            status = orgRecord['statusStr'].capitalize()
-            inn = orgRecord['inn']
-            message += shortName + "\n"
+                short_name = org_record['fullName']
+            status = org_record['statusStr'].capitalize()
+            inn = org_record['inn']
+            message += short_name + "\n"
             message += "*Статус:* " + status + "\n"
             message += "*ИНН:* /" + inn + "\n"
             if not kpp == '':
                 message += "*КПП:* " + kpp + "\n"
-            if 'leader' in orgRecord:
-                leader = orgRecord['leader']
-                leaderPosition = '*' + leader['position'].capitalize() + '*'
+            if 'leader' in org_record:
+                leader = org_record['leader']
+                leader_position = '*' + leader['position'].capitalize() + '*'
                 leader_name = leader['name']
-                message += leaderPosition + ':' + leader_name + "\n"
-            message += '*Адрес:*' + orgRecord['addressStr'] + '\n\n'
+                message += leader_position + ':' + leader_name + "\n"
+            message += '*Адрес:*' + org_record['addressStr'] + '\n\n'
     else:
         message = "Ничего не найдено, уточните параметры поиска"
     return message
 
 
-def getMainInfo(inn):
-    payload = {'inn': inn, 'installation_id': 9999}
-    result = requests.get(config.indicatorUrl + '/api/v0/orginfo/organizations/record', params=payload, verify=config.verification)
-    if result.text:
-        data = json.loads(result.text)
+def get_main_info(inn):
+    result = requests.get(irq.company_card, verify=config.verification)
+    if result.status_code:
+        data = json.loads(result.text)['content']
     else:
-        data = json.loads(
-            "{\"errorCode\":2000,\"inn\":\"25\",\"errorDescriptionRu\":\"Контрагент не найден\","
-            "\"errorDescriptionEn\":\"Contractor is not found\"}")
+        data = json.loads(result.text)
     return data
-
-
+"""
+deprecated
+"""
+"""
 def getLeaders(inn):
-    payload = {'inn': inn, 'installation_id': 9999}
-    result = requests.get(config.indicatorUrl + '/api/v0/orginfo/leaders/list', params=payload, verify=config.verification)
+    result = requests.get(irq., verify=config.verification)
     if result.text:
         data = json.loads(result.text)
     else:
@@ -88,6 +86,7 @@ def getFounders(ogrn):
             "\"errorDescriptionEn\":\"Contractor is not found\"}")
     return data
 
+"""
 
 def getFinanceSummary(ogrn):
     result = requests.get(config.indicatorUrl + '/api/v1/entities/' + ogrn + '/legal_bookkeeping/summary', verify=config.verification)
@@ -99,37 +98,44 @@ def getFinanceSummary(ogrn):
     return data
 
 
-def getRating(inn):
-    payload = {'inn': inn, 'installation_id': 9999}
-    result = requests.get(config.indicatorUrl + '/rating', params=payload, verify=config.verification)
-    return json.loads(result.text)
+def get_rating(inn):
+    result = requests.get(irq.markers.format(inn), verify=config.verification)
+    if result.status_code == 200:
+        return json.loads(result.text)['content']
+    else:
+        return json.load(result.text)
 
 
-def parsemaincodes(orgRecord):
+def parse_main_codes(org_card):
     ogrn = okpo = ''
-    ogrn = orgRecord['ogrn']
-    if 'okpo' in orgRecord:
-        okpo = orgRecord['okpo']
+    ogrn = org_card['ogrn']
+    if 'okpo' in org_card:
+        okpo = org_card['okpo']
     return ogrn, okpo
 
 
-def parseRating(orgRecord):
+"""
+TODO Переделать парс маркеров. Неудобный API
+"""
+
+
+def parse_rating(org_card):
     ratings = config.ratings
     numbers = config.numbers
-    message = 'Краткая информация о '
+    message = ''
     kpp = ''
-    if 'kpp' in orgRecord:
-        kpp = orgRecord['kpp']
-    if 'shortName' in orgRecord:
-        shortName = orgRecord['shortName']
+    if 'kpp' in org_card:
+        kpp = org_card['kpp']
+    if 'shortName' in org_card:
+        shortName = org_card['shortName']
     else:
-        shortName = fullName = orgRecord['fullName']
-    status = orgRecord['status'].capitalize()
-    inn = orgRecord['inn']
-    rInd = int(orgRecord['criticalFacts'])
-    yInd = int(orgRecord['payAttentionFacts'])
-    gInd = int(orgRecord['activityFacts'])
-    bInd = int(orgRecord['achievements'])
+        shortName = fullName = org_card['fullName']
+    status = org_card['status'].capitalize()
+    inn = org_card['inn']
+    rInd = int(org_card['criticalFacts'])
+    yInd = int(org_card['payAttentionFacts'])
+    gInd = int(org_card['activityFacts'])
+    bInd = int(org_card['achievements'])
     indicators = ratings['red'] + numbers[rInd] + ratings['yellow'] + numbers[yInd] + ratings['green'] + numbers[gInd] + ratings['blue'] + numbers[bInd]
     message += shortName + "\n\n"
     message += indicators + "\n\n"
@@ -141,59 +147,61 @@ def parseRating(orgRecord):
     return message
 
 
-def parseOrgrecord(orgRecord):
+def parse_org_card(org_card):
     rouble = config.rouble
     capital = ''
-    mainActivity = ''
+    main_activity = ''
     message = ''
-    fullName = shortName = ''
-    ogrn = orgRecord['ogrn']
-    # if 'fullName' in orgRecord:
-    #     fullName = orgRecord['fullName']
-    if 'shortName' in orgRecord:
-        shortName = orgRecord['shortName']
+    full_name = short_name = ''
+    ogrn = org_card['ogrn']
+    kpp = org_card['kpp']
+    if 'shortName' in org_card:
+        short_name = org_card['shortName']
     else:
-        shortName = fullName = orgRecord['fullName']
-    status = orgRecord['status']['statusName'].capitalize()
-    inn = orgRecord['inn']
-    if 'registrationDate' in orgRecord:
-        regdate = orgRecord['registrationDate']
+        short_name = full_name = org_card['fullName']
+    status = org_card['status']['name'].capitalize()
+    inn = org_card['inn']
+    if 'registrationDate' in org_card:
+        reg_date = org_card['registrationDate']
     else:
-        regdate = orgRecord['ogrnDate']
+        reg_date = org_card['ogrnAssignmentDate']
     address = ''
-    if 'address' in orgRecord:
-        if 'index' in orgRecord['address']:
-            address += orgRecord['address']['index'] + ', '
-        if 'region' in orgRecord['address']:
-            if 'type' in orgRecord['address']['region']:
-                address += orgRecord['address']['region']['type'].lower() + ' '
-            if 'name' in orgRecord['address']['region']:
-                address += orgRecord['address']['region']['name'].capitalize() + ', '
-        if 'city' in orgRecord['address']:
-            if 'type' in orgRecord['address']['city']:
-                address += orgRecord['address']['city']['type'].lower() + ' '
-            if 'name' in orgRecord['address']['city']:
-                address += orgRecord['address']['city']['name'].capitalize() + ', '
-        if 'street' in orgRecord['address']:
-            if 'type' in orgRecord['address']['street']:
-                address += orgRecord['address']['street']['type'].lower() + ' '
-            if 'name' in orgRecord['address']['street']:
-                address += orgRecord['address']['street']['name'].capitalize() + ', '
-        if 'house' in orgRecord['address']:
-            address += orgRecord['address']['house'].lower()
-        if 'apartment' in orgRecord['address']:
-            address += ', ' + orgRecord['address']['apartment'].lower()
-    if 'capitalValue' in orgRecord:
-        capital = tools.moneyfmt(Decimal(orgRecord['capitalValue']))
-    if 'mainEconomicActivity' in orgRecord:
-        mainActivity = orgRecord['mainEconomicActivity']['code'] + ' ' + orgRecord['mainEconomicActivity']['name']
-
+    if 'address' in org_card:
+        if 'index' in org_card['address']:
+            address += org_card['address']['index'] + ', '
+        if 'region' in org_card['address']:
+            if 'type' in org_card['address']['region']:
+                address += org_card['address']['region']['type'].lower() + ' '
+            if 'name' in org_card['address']['region']:
+                address += org_card['address']['region']['name'].capitalize() + ', '
+        if 'city' in org_card['address']:
+            if 'type' in org_card['address']['city']:
+                address += org_card['address']['city']['type'].lower() + ' '
+            if 'name' in org_card['address']['city']:
+                address += org_card['address']['city']['name'].capitalize() + ', '
+        if 'street' in org_card['address']:
+            if 'type' in org_card['address']['street']:
+                address += org_card['address']['street']['type'].lower() + ' '
+            if 'name' in org_card['address']['street']:
+                address += org_card['address']['street']['name'].capitalize() + ', '
+        if 'house' in org_card['address']:
+            address += org_card['address']['house'].lower()
+        if 'apartment' in org_card['address']:
+            address += ', ' + org_card['address']['apartment'].lower()
+    if 'authorizedCapital' in org_card:
+        capital = tools.moneyfmt(Decimal(org_card['capitalValue']))
+    if 'economicActivity' in org_card:
+        main_activity = org_card['economicActivity']['main']['code'] + ' ' + org_card['economicActivity']['main']['name']
+    message += short_name + "\n\n"
+    message += "*Статус:* " + status + "\n"
+    message += "*ИНН:* " + inn  + "\n"
+    message += "*КПП:* " + kpp + "\n"
     message += "*ОГРН:* " + ogrn + "\n"
-    message += "*Дата создания: *" + regdate + "\n"
+    message += "*Дата создания: *" + reg_date + "\n"
     message += "*Адрес:* " + address + "\n"
     if not capital == '':
         message += "*Уставный капитал: *" + capital + ' ' + rouble + "\n"
-    message += "*Основной вид деятельности: *" + mainActivity + "\n"
+    message += "*Основной вид деятельности: *" + main_activity + "\n"
     return message
 
 
