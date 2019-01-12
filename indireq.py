@@ -3,7 +3,7 @@ Indicator requests list
 """
 
 search = 'https://indicator.bifit.ru/api/v2/business-entities/actual'
-company_card = search + '/{inn}'
+company_card = search + '/{0}'
 markers = company_card + '/analytics/markers'
 payment_details = company_card + '/payment-details'
 registries = company_card + '/registries-membership'
