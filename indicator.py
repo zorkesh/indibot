@@ -47,14 +47,14 @@ def handle_message(message):
     #try:
     inn = message.text.replace('/', '')
     rate = apiparser.get_rating(inn)
-    bot.send_message(message.chat.id, rate, parse_mode='markdown')
+    # bot.send_message(message.chat.id, rate, parse_mode='markdown')
     if not 'message' in rate:
         resp_message = ''
         # ratemessage = apiparser.parse_rating(rate)
         resp_message += 'Краткая информация об организации.' + "\n"
         orginforecord = apiparser.get_main_info(inn)
         # Ищем организацию
-        bot.send_message(message.chat.id, orginforecord, parse_mode='markdown')
+        # bot.send_message(message.chat.id, orginforecord, parse_mode='markdown')
         mainInfo = apiparser.parse_org_card(orginforecord)
         resp_message += mainInfo + "\n"
         # Ищем директоров
