@@ -55,7 +55,8 @@ def parse_search(data):
 
 
 def get_main_info(inn):
-    result = requests.get(irq.company_card, verify=config.verification)
+    headers = config.headers
+    result = requests.get(irq.company_card, headers=headers, verify=config.verification)
     if result.status_code:
         data = json.loads(result.text)['content']
     else:
@@ -99,7 +100,8 @@ def getFinanceSummary(ogrn):
 
 
 def get_rating(inn):
-    result = requests.get(irq.markers.format(inn), verify=config.verification)
+    headers = config.headers
+    result = requests.get(irq.markers.format(inn), headers=headers, verify=config.verification)
     if result.status_code == 200:
         return json.loads(result.text)['content']
     else:
