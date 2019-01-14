@@ -49,13 +49,13 @@ def handle_message(message):
     inn = message.text.replace('/', '')
     rate = apiparser.get_rating(inn)
     if not 'message' in rate:
-        respmessage = ''
+        resp_message = ''
         # ratemessage = apiparser.parse_rating(rate)
         resp_message += 'Краткая информация об организации.' + "\n"
         orginforecord = apiparser.get_main_info(inn)
         # Ищем организацию
         mainInfo = apiparser.parse_org_card(orginforecord)
-        respmessage += mainInfo + "\n"
+        resp_message += mainInfo + "\n"
         # Ищем директоров
         #leadersInfo = apiparser.getLeaders(inn)
         #respmessage += apiparser.parseLeaders(leadersInfo) + "\n"
@@ -68,7 +68,7 @@ def handle_message(message):
         #else:
         #    finInfo = apiparser.getFinanceSummary(ogrn)
         #    respmessage += apiparser.parseFinSummary(finInfo) + "\n"
-        bot.send_message(message.chat.id, respmessage, parse_mode='markdown')
+        bot.send_message(message.chat.id, resp_message, parse_mode='markdown')
     else:
         bot.send_message(message.chat.id, rate['message'])
     #except Exception as e:
