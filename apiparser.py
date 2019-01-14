@@ -11,7 +11,7 @@ import indireq as irq
 Модуль для разбора данных ответа API Индикатора.
 get* - получение JSON объекта из API
 parse* - разбор JSON объекта и возврат текста для сообщения бота 
-""" 
+"""
 
 
 def search(query):
@@ -57,7 +57,7 @@ def parse_search(data):
 def get_main_info(inn):
     headers = config.headers
     result = requests.get(irq.company_card, headers=headers, verify=config.verification)
-    if result.status_code:
+    if result.status_code == 200:
         data = json.loads(result.text)['content']
     else:
         data = json.loads(result.text)
