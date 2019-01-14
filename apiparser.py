@@ -56,7 +56,7 @@ def parse_search(data):
 
 def get_main_info(inn):
     headers = config.headers
-    result = requests.get(irq.company_card, headers=headers, verify=config.verification)
+    result = requests.get(irq.company_card.format(inn), headers=headers, verify=config.verification)
     return result.text + ' code ' + result.status_code
 """
     if result.status_code == 200:
