@@ -107,6 +107,29 @@ def get_rating(inn):
     return json.loads(result.text)
 
 
+def get_egrul_pdf(inn):
+    fname = 'vyp-' + inn + '.pdf'
+    nalog = 'https://egrul.nalog.ru/'
+    headers_post = {'Content-Type': 'application/x-www-form-urlencoded'}
+    search_params = {'query': inn}
+    resp = requests.post(nalog, data=search_params, headers=headers_post)
+    code = json.loads(resp.text)['t']
+    headers_result = {'Content-Type': 'application/json'}
+    resp = requests.get(nalog + 'search-result/' + code, headers=headers_result)
+    # Тут можно строить массив для поиска
+    code = json.loads(resp.text)['rows'][0]['t']
+    resp = requests.get(nalog + 'vyp-request/' + code, headers=headers_result)
+    # code = json.loads(resp.text)['t']
+    status = 'wait'
+    while status != 'ready':
+        resp = requests.get(nalog + 'vyp-status/' + code, headers=headers_result)
+        status = json.loads(resp.text)['status']
+    headers_vyp = {'Accept': 'text/html'}
+    resp = requests.get(nalog + 'vyp-download/' + code)
+    with open(fname, 'wb') as f:
+        f.write(resp.content)
+    return fname
+
 def parse_main_codes(org_card):
     ogrn = okpo = ''
     ogrn = org_card['ogrn']
@@ -137,7 +160,8 @@ def parse_rating(org_card):
     yInd = int(org_card['payAttentionFacts'])
     gInd = int(org_card['activityFacts'])
     bInd = int(org_card['achievements'])
-    indicators = ratings['red'] + numbers[rInd] + ratings['yellow'] + numbers[yInd] + ratings['green'] + numbers[gInd] + ratings['blue'] + numbers[bInd]
+    indicators = ratings['red'] + numbers[rInd] + ratings['yellow'] + numbers[yInd] + ratings['green'] + numbers[gInd] \
+                 + ratings['blue'] + numbers[bInd]
     message += shortName + "\n\n"
     message += indicators + "\n\n"
     message += "*Статус:* " + status + "\n"
@@ -168,32 +192,34 @@ def parse_org_card(org_card):
         reg_date = org_card['ogrnAssignmentDate']
     address = ''
     if 'address' in org_card:
-        if 'index' in org_card['address']:
+        if tools.check_val(org_card['address']['index']):
             address += org_card['address']['index'] + ', '
-        if 'region' in org_card['address']:
+        if tools.check_val(org_card['address']['region']):
             if 'type' in org_card['address']['region']:
                 address += org_card['address']['region']['type'].lower() + ' '
             if 'name' in org_card['address']['region']:
                 address += org_card['address']['region']['name'].capitalize() + ', '
-        if 'city' in org_card['address']:
+        if tools.check_val(org_card['address']['city']):
             if 'type' in org_card['address']['city']:
                 address += org_card['address']['city']['type'].lower() + ' '
             if 'name' in org_card['address']['city']:
                 address += org_card['address']['city']['name'].capitalize() + ', '
-        if 'street' in org_card['address']:
+        if tools.check_val(org_card['address']['street']):
             if 'type' in org_card['address']['street']:
                 address += org_card['address']['street']['type'].lower() + ' '
             if 'name' in org_card['address']['street']:
                 address += org_card['address']['street']['name'].capitalize() + ', '
-        if 'house' in org_card['address']:
-            address += org_card['address']['house'].lower()
+        if tools.check_val(org_card['address']['house']):
+            house = org_card['address']['house']
+            if tools.check_val(house): address += house.lower()
         if 'apartment' in org_card['address']:
-            address += ', ' + org_card['address']['apartment'].lower()
+            apt = org_card['address']['apartment']
+            if tools.check_val(apt): address += ', ' + apt.lower()
     if 'authorizedCapital' in org_card:
-        capital = tools.moneyfmt(Decimal(org_card['capitalValue']))
+        capital = tools.moneyfmt(Decimal(org_card['authorizedCapital']))
     if 'economicActivity' in org_card:
         main_activity = org_card['economicActivity']['main']['code'] + ' ' + org_card['economicActivity']['main']['name']
-    message += short_name + "\n\n"
+    message += "*" + short_name + "*" + "\n\n"
     message += "*Статус:* " + status + "\n"
     message += "*ИНН:* " + inn  + "\n"
     message += "*КПП:* " + kpp + "\n"
@@ -203,6 +229,7 @@ def parse_org_card(org_card):
     if not capital == '':
         message += "*Уставный капитал: *" + capital + ' ' + rouble + "\n"
     message += "*Основной вид деятельности: *" + main_activity + "\n"
+    message += '*Выписка в pdf:* ' + '/vyp' + inn
     return message
 
 

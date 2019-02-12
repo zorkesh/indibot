@@ -4,6 +4,7 @@ import apiparser
 import config
 import telebot
 from telebot import types
+from os import remove as rmf
 
 
 bot = telebot.TeleBot(config.token)
@@ -17,6 +18,16 @@ def handle_start_help(message):
                   "Поиск производится по ИНН, Наименованию, ФИО Руководителя, Учредителям, Адресу регистрации. \n" \
                   "Работаю пока в бета режиме. Ряд функций может быть недоступен"
     bot.send_message(message.chat.id, resultstart)
+
+
+@bot.message_handler(regexp=r'vyp.*')
+def download_vyp(message):
+    inn = inn = message.text.replace('/vyp', '')
+    bot.send_message(message.chat.id, 'Выписка готовится')
+    fname = apiparser.get_egrul_pdf(inn)
+    with open(fname, 'rb') as f:
+        bot.send_document(message.chat.id,f)
+    rmf(fname)
 
 
 @bot.message_handler(regexp=r'\d{12}')
@@ -44,47 +55,44 @@ def handle_ip_message(message):
 
 @bot.message_handler(regexp=r'\d{10}')
 def handle_message(message):
-    #try:
-    inn = message.text.replace('/', '')
-    rate = apiparser.get_rating(inn)
-    # bot.send_message(message.chat.id, rate, parse_mode='markdown')
-    if not 'message' in rate:
-        resp_message = ''
-        # ratemessage = apiparser.parse_rating(rate)
-        resp_message += 'Краткая информация об организации.' + "\n"
-        orginforecord = apiparser.get_main_info(inn)
-        # Ищем организацию
-        # bot.send_message(message.chat.id, orginforecord, parse_mode='markdown')
-        mainInfo = apiparser.parse_org_card(orginforecord)
-        resp_message += mainInfo + "\n"
-        # Ищем директоров
-        #leadersInfo = apiparser.getLeaders(inn)
-        #respmessage += apiparser.parseLeaders(leadersInfo) + "\n"
-        # TODO Добавить учредителей
-        #foundersInfo = apiparser.getFounders(ogrn)
-        #respmessage += apiparser.parseFounders(foundersInfo) + "\n"
-        # Ищем бух.отчетнсть
-        #if okpo == '':
-        #    respmessage += "*Бухгалтерская отчетность не опубликована*"
-        #else:
-        #    finInfo = apiparser.getFinanceSummary(ogrn)
-        #    respmessage += apiparser.parseFinSummary(finInfo) + "\n"
-        bot.send_message(message.chat.id, resp_message, parse_mode='markdown')
-    else:
-        bot.send_message(message.chat.id, rate['message'])
-    #except Exception as e:
-     #   bot.send_message(message.chat.id, 'Что-то пошло не так. Попробуйте позже\n' + str(e))
+    try:
+        inn = message.text.replace('/', '')
+        rate = apiparser.get_rating(inn)
+        if not 'message' in rate:
+            resp_message = ''
+            # ratemessage = apiparser.parse_rating(rate)
+            resp_message += 'Краткая информация об организации.' + "\n"
+            org_info_record = apiparser.get_main_info(inn)
+            # Ищем организацию
+            main_info = apiparser.parse_org_card(org_info_record)
+            resp_message += main_info + "\n"
+            # Ищем директоров
+            #leadersInfo = apiparser.getLeaders(inn)
+            #respmessage += apiparser.parseLeaders(leadersInfo) + "\n"
+            # TODO Добавить учредителей
+            #foundersInfo = apiparser.getFounders(ogrn)
+            #respmessage += apiparser.parseFounders(foundersInfo) + "\n"
+            # Ищем бух.отчетнсть
+            #if okpo == '':
+            #    respmessage += "*Бухгалтерская отчетность не опубликована*"
+            #else:
+            #    finInfo = apiparser.getFinanceSummary(ogrn)
+            #    respmessage += apiparser.parseFinSummary(finInfo) + "\n"
+            bot.send_message(message.chat.id, resp_message, parse_mode='markdown')
+        else:
+            bot.send_message(message.chat.id, rate['message'])
+    except Exception as e:
+        bot.send_message(message.chat.id, 'Что-то пошло не так. Попробуйте позже\n' + str(e))
 
 
 @bot.message_handler(func=lambda message: True, content_types=['text'])
 def search_msg(message):
-    # bot.send_message(message.chat.id, "Я пока не понимаю никаких сообщений кроме ИНН :(")
-    # try:
-    resp = apiparser.search(message.text)
-    resp_message = apiparser.parse_search(resp)
-    bot.send_message(message.chat.id, resp_message, parse_mode='markdown')
-    # except Exception as e:
-    #     bot.send_message(message.chat.id, 'Что-то пошло не так. Попробуйте позже\n' + str(e))
+    try:
+        resp = apiparser.search(message.text)
+        resp_message = apiparser.parse_search(resp)
+        bot.send_message(message.chat.id, resp_message, parse_mode='markdown')
+    except Exception as e:
+        bot.send_message(message.chat.id, 'Что-то пошло не так. Попробуйте позже\n' + str(e))
 
 
 @bot.inline_handler(func=lambda query: len(query.query) > 3)
@@ -104,7 +112,7 @@ def query_text(query):
         r_inf = types.InlineQueryResultArticle(id=1,
                                                title='',
                                                description="Ничего не найдено",
-                                               input_message_content=types.InputTextMessageContent(message_text=inn,
+                                               input_message_content=types.InputTextMessageContent(message_text=query.query,
                                                                                                    parse_mode='markdown'))
         bot.answer_inline_query(query.id, [r_inf])
 

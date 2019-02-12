@@ -50,3 +50,9 @@ def moneyfmt(value, places=2, curr='', sep=' ', dp='.',
     build(curr)
     build(neg if sign else pos)
     return ''.join(reversed(result))
+
+
+def check_val(s):
+    if s is None:
+        return False
+    return True
